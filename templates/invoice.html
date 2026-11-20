@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+  <h2>Invoice {{ sale['invoice_no'] }}</h2>
+  <p><strong>Item:</strong> {{ sale['item_name'] }}</p>
+  <p><strong>Customer:</strong> {{ sale['customer_name'] }}</p>
+  <p><strong>Contact:</strong> {{ sale['customer_contact'] }}</p>
+  <p><strong>Quantity:</strong> {{ sale['quantity'] }}</p>
+  <p><strong>Total:</strong> ₱{{ '%.2f'|format(sale['total_amount']) }}</p>
+  <p><strong>Branch:</strong> {{ sale['branch'] }}</p>
+  <p><strong>Payment:</strong> {{ sale['payment_method'] }}</p>
+  <p><strong>Processed By:</strong> {{ sale['processed_by'] }}</p>
+  <p><strong>Date:</strong> {{ sale['sale_date'] }}</p>
+  <a href="{{ url_for('admin') }}" class="btn-action">Back to Admin</a>
+</div>
+{% endblock %}

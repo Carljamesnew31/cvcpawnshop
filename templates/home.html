@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hero">
+  <h1>CVCPawnshop</h1>
+  <p>Quality items at great prices &mdash; Phones, Laptops, Tablets, Gold &amp; more.</p>
+  <a href="{{ url_for('remate') }}" class="btn-action">Shop Now</a>
+</div>
+
+<h2 style="margin:24px 0 12px;">Featured Items</h2>
+{% if items %}
+<div class="grid">
+  {% for item in items %}
+  <div class="item">
+    <img src="{{ item['image_url'] }}" alt="{{ item['name'] }}" style="cursor:pointer;" onclick="openModal('{{ item['image_url'] }}','{{ item['name'] }}','{{ '%.2f'|format(item['price']) }}','{{ item['description'] }}')" onerror="this.src='https://via.placeholder.com/300x160/1e3a8a/ffffff?text=No+Image'">
+    <div class="info">
+      <h3>{{ item['name'] }}</h3>
+      <p>{{ item['category'] }} &bull; {{ item['condition'] }}</p>
+      <p class="price">₱{{ '%.2f'|format(item['price']) }}</p>
+      <p>Qty: {{ item['quantity'] }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p>No items available right now.</p>
+{% endif %}
+{% endblock %}
