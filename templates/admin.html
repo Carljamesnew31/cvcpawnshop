@@ -80,7 +80,8 @@
       <td>{{ item['quantity'] }}</td>
       <td>
         {% if item['status'] == 'Available' %}
-          {% if item['quantity'] and item['quantity'] <= 2 %}<span class="pill pill-low">Low stock</span>
+          {% if item['quantity'] is none or item['quantity'] <= 0 %}<span class="pill pill-sold">Out of stock</span>
+          {% elif item['quantity'] <= 2 %}<span class="pill pill-low">Low stock</span>
           {% else %}<span class="pill pill-ok">Available</span>{% endif %}
         {% else %}<span class="pill pill-sold">Sold</span>{% endif %}
       </td>
