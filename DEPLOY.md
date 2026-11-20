@@ -1,8 +1,11 @@
-# Deploying CVC Pawnshop — cvcpawnshop.com
+# Deploying CVC Pawnshop — cvcpawnshops.com
 
 Flask + SQLite app. Repository: https://github.com/Carljamesnew31/cvcpawnshop
 Domain registrar: GoDaddy (domain only, no hosting package).
-Current DNS status: no records pointing anywhere — clean start.
+Important: the domain is **cvcpawnshops.com** (with an "s" after pawnshop).
+The Render service URL is **cvcpawnshop.onrender.com** (no "s") — do not mix them up.
+Current DNS status: A @ → 216.24.57.1 plus two leftover GoDaddy parking A records
+(15.197.148.33, 3.33.130.190) that should be deleted; CNAME www → cvcpawnshop.onrender.com.
 
 ## Read this first
 
@@ -85,13 +88,13 @@ Save — Render restarts the service.
 ### 4. Add your domain in Render
 
 1. Service → **Settings** → **Custom Domains** → **+ Add Custom Domain**.
-2. Enter `cvcpawnshop.com` and save.
-3. Render automatically adds `www.cvcpawnshop.com` as well and redirects it to the
+2. Enter `cvcpawnshops.com` and save.
+3. Render automatically adds `www.cvcpawnshops.com` as well and redirects it to the
    bare domain. You'll see "DNS update needed" until the next step.
 
 ### 5. Set the DNS records in GoDaddy
 
-1. Log in to GoDaddy → **My Products** → next to `cvcpawnshop.com` click **DNS**
+1. Log in to GoDaddy → **My Products** → next to `cvcpawnshops.com` click **DNS**
    (or **Manage DNS**).
 2. In the **Records** section, delete/edit any existing `A`, `CNAME`, or `AAAA`
    records for `@` and `www`. Leave `NS`, `SOA`, `MX`, and `TXT` records alone.
@@ -105,15 +108,18 @@ Save — Render restarts the service.
    Replace `cvcpawnshop.onrender.com` with the actual URL from step 1.6 if different.
    Remove any `AAAA` records — Render uses IPv4 only and IPv6 records can break it.
 
-4. Save. DNS can take a few minutes (sometimes a few hours) to spread across the internet.
+4. **Delete any other `A` records at `@`** (GoDaddy default parking addresses such as
+   `15.197.148.33` and `3.33.130.190`). Only `216.24.57.1` should remain, otherwise
+   visitors may land on a GoDaddy parking page instead of the site.
+5. Save. DNS can take a few minutes to spread across the internet.
 
 ### 6. Verify and enable HTTPS
 
 1. Back in Render → **Settings → Custom Domains** → click **Verify** next to
-   `cvcpawnshop.com`.
+   `cvcpawnshops.com`.
 2. Once verified, Render automatically issues a free SSL certificate. HTTP traffic
    redirects to HTTPS by itself.
-3. Visit `https://cvcpawnshop.com` and `https://www.cvcpawnshop.com` — both should load.
+3. Visit `https://cvcpawnshops.com` and `https://www.cvcpawnshops.com` — both should load.
 
 ### 7. Upload your existing database (optional)
 
@@ -138,10 +144,10 @@ Render also takes automatic daily snapshots of the disk (kept for 7 days).
 Works too, but with your own domain it's less suitable:
 
 - Custom domains require the paid **Developer** plan ($10/month).
-- PythonAnywhere recommends hosting on `www.cvcpawnshop.com` via a CNAME to
+- PythonAnywhere recommends hosting on `www.cvcpawnshops.com` via a CNAME to
   `webapp-XXXX.pythonanywhere.com`, then setting up GoDaddy domain forwarding from
-  `cvcpawnshop.com` to `www.cvcpawnshop.com`. GoDaddy's forwarding is HTTP-only, so
-  `https://cvcpawnshop.com` won't work cleanly.
+  `cvcpawnshops.com` to `www.cvcpawnshops.com`. GoDaddy's forwarding is HTTP-only, so
+  `https://cvcpawnshops.com` won't work cleanly.
 
 If you choose this route, follow https://help.pythonanywhere.com/pages/CustomDomains/
 and use the GoDaddy CNAME instructions there. The app itself needs no changes.
