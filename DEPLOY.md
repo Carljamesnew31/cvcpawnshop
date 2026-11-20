@@ -22,6 +22,28 @@ Current DNS status: no records pointing anywhere — clean start.
 
 ---
 
+## If you choose Render's Free plan (no cost)
+
+Your domain and SSL both work on Free. The setup is the same as below except:
+
+- Compute plan: **Free** — skip the disk entirely (step 2).
+- Do **not** set `DB_PATH` (leave the default `cvcpawnshop.db`), since there is no disk.
+- Still set `SECRET_KEY` and all the credential environment variables.
+- GoDaddy DNS records are identical: `A` `@` → `216.24.57.1`,
+  `CNAME` `www` → your `.onrender.com` URL.
+- Step 7 (uploading your existing database) is **not possible** on Free — no disk and
+  no shell access. The site always starts empty.
+
+**Critical limitation:** Free services spin down after 15 minutes of inactivity and
+Render can restart them at any time. Each restart **deletes the entire SQLite database
+and all uploaded images** — inventory, sales, pawns, audit logs. Free Render is only
+safe for a demo or a read-only catalog, not for recording real transactions.
+
+To keep data on a free budget, the app needs to store it in a free hosted database
+(e.g. Neon or Supabase) instead of a local SQLite file. That requires a code change.
+
+---
+
 ## Recommended: Render + your GoDaddy domain
 
 ### 1. Create the web service
