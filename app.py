@@ -147,6 +147,21 @@ def audit(username, action, details):
 init_db()
 
 
+@app.route('/health')
+def health():
+    info = {'use_postgres': USE_POSTGRES}
+    try:
+        conn = get_db()
+        info['inventory'] = conn.execute("SELECT COUNT(*) FROM inventory").fetchone()[0]
+        info['available'] = conn.execute("SELECT COUNT(*) FROM inventory WHERE status='Available' AND quantity > 0").fetchone()[0]
+        conn.close()
+        info['db'] = 'ok'
+    except Exception as e:
+        info['db'] = 'error'
+        info['error'] = str(e)[:200]
+    return Response(json.dumps(info), mimetype='application/json')
+
+
 @app.route('/')
 def home():
     conn = get_db()
