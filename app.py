@@ -59,6 +59,13 @@ class PGConnection:
     def close(self):
         self._conn.close()
 
+    def __del__(self):
+        # Release the connection even if a route raises before calling close().
+        try:
+            self._conn.close()
+        except Exception:
+            pass
+
 
 def get_db():
     if USE_POSTGRES:
