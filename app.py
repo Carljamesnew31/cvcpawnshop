@@ -8,12 +8,19 @@ from PIL import Image
 from datetime import timedelta
 
 app = Flask(__name__)
-app.secret_key = 'cvcpawnshop_secret_key'
+app.secret_key = os.environ.get('SECRET_KEY', 'cvcpawnshop_secret_key')
+DB_PATH = os.environ.get('DB_PATH', 'cvcpawnshop.db')
 
-USERS = {'Chezl': ('chezl123', 'owner'), 'Chanda': ('chanda123', 'staff'), 'Kenrose': ('kenrose123', 'staff')}
+# Set these as environment variables on the host so the public repo never
+# contains the live credentials. Locally the defaults keep development easy.
+USERS = {
+    os.environ.get('OWNER_USER', 'Chezl'): (os.environ.get('OWNER_PASS', 'chezl123'), 'owner'),
+    os.environ.get('STAFF1_USER', 'Chanda'): (os.environ.get('STAFF1_PASS', 'chanda123'), 'staff'),
+    os.environ.get('STAFF2_USER', 'Kenrose'): (os.environ.get('STAFF2_PASS', 'kenrose123'), 'staff'),
+}
 
 def get_db():
-    conn = sqlite3.connect('cvcpawnshop.db')
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -51,6 +58,27 @@ def init_db():
         action TEXT,
         details TEXT,
         timestamp TEXT
+    )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS pawns (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ticket_no TEXT UNIQUE,
+        item_name TEXT,
+        customer_name TEXT,
+        customer_contact TEXT,
+        pawn_amount REAL,
+        pawn_date TEXT,
+        due_date TEXT,
+        status TEXT,
+        total_paid REAL,
+        branch TEXT,
+        processed_by TEXT
+    )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS pawn_payments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pawn_id INTEGER,
+        amount REAL,
+        payment_date TEXT,
+        processed_by TEXT
     )''')
     conn.commit()
     conn.close()
@@ -294,7 +322,8 @@ def backup():
     if session.get('role') != 'owner':
         return redirect(url_for('login'))
     audit(session.get('user'), 'BACKUP', 'Downloaded database backup')
-    return send_file('cvcpawnshop.db', as_attachment=True, download_name='cvcpawnshop_backup.db')
+    return send_file(DB_PATH, as_attachment=True, download_name='cvcpawnshop_backup.db')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)),
+            debug=os.environ.get('FLASK_DEBUG') == '1')
