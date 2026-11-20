@@ -1,16 +1,46 @@
 {% extends 'base.html' %}
+{% block title %}Invoice {% if sale %}{{ sale['invoice_no'] }}{% endif %} &mdash; CVCPawnshop{% endblock %}
 {% block content %}
+
+{% if sale %}
 <div class="card">
-  <h2>Invoice {{ sale['invoice_no'] }}</h2>
-  <p><strong>Item:</strong> {{ sale['item_name'] }}</p>
-  <p><strong>Customer:</strong> {{ sale['customer_name'] }}</p>
-  <p><strong>Contact:</strong> {{ sale['customer_contact'] }}</p>
-  <p><strong>Quantity:</strong> {{ sale['quantity'] }}</p>
-  <p><strong>Total:</strong> ₱{{ '%.2f'|format(sale['total_amount']) }}</p>
-  <p><strong>Branch:</strong> {{ sale['branch'] }}</p>
-  <p><strong>Payment:</strong> {{ sale['payment_method'] }}</p>
-  <p><strong>Processed By:</strong> {{ sale['processed_by'] }}</p>
-  <p><strong>Date:</strong> {{ sale['sale_date'] }}</p>
+  <div class="invoice-head">
+    <div>
+      <div class="invoice-brand">&#128230; CVCPawnshop</div>
+      <div class="invoice-no">Invoice {{ sale['invoice_no'] }}</div>
+    </div>
+    <div class="invoice-meta">
+      <div><strong>Date</strong><br>{{ sale['sale_date'] }}</div>
+      <div style="margin-top:8px"><strong>Branch</strong><br>{{ sale['branch'] or 'CVC Opon' }}</div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail"><span>Item</span><strong>{{ sale['item_name'] }}</strong></div>
+    <div class="detail"><span>Customer</span><strong>{{ sale['customer_name'] or '&mdash;' }}</strong></div>
+    <div class="detail"><span>Contact</span><strong>{{ sale['customer_contact'] or '&mdash;' }}</strong></div>
+    <div class="detail"><span>Quantity</span><strong>{{ sale['quantity'] }}</strong></div>
+    <div class="detail"><span>Payment method</span><strong>{{ sale['payment_method'] }}</strong></div>
+    <div class="detail"><span>Processed by</span><strong>{{ sale['processed_by'] }}</strong></div>
+  </div>
+
+  <div class="total-box">
+    <span>Total amount paid</span>
+    <strong>&#8369;{{ '%.2f'|format(sale['total_amount']) }}</strong>
+  </div>
+
+  <div class="form-actions">
+    <a href="{{ url_for('admin') }}" class="btn-action">&larr; Back to Admin</a>
+    <button class="btn-action btn-ghost" onclick="window.print()">&#128424; Print Invoice</button>
+  </div>
+</div>
+{% else %}
+<div class="empty">
+  <span class="big">&#128196;</span>
+  <h3>Invoice not found</h3>
+  <p>This invoice may have been deleted.</p>
   <a href="{{ url_for('admin') }}" class="btn-action">Back to Admin</a>
 </div>
+{% endif %}
+
 {% endblock %}

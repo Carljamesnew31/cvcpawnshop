@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Staff Login &mdash; CVCPawnshop{% endblock %}
+{% block content %}
+<style>
+  .topbar,.sidebar,.overlay,footer,.aurora{display:none!important}
+  .container{max-width:none!important;margin:0!important;padding:0!important}
+  .auth-shell .btn-ghost{animation:none}
+  .alert{padding:11px 14px;border-radius:12px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#b91c1c;font-size:13px;margin-bottom:16px;font-weight:600}
+</style>
+
+<div class="auth-shell">
+  <section class="auth-art">
+    <div class="hero-badge">&#128274; &nbsp; Staff access only</div>
+    <h1>Welcome back to <em style="font-style:normal;color:#fbbf24">CVC Pawnshop</em></h1>
+    <p>Manage inventory, record sales, create pawn tickets and keep every branch in sync &mdash; all from one clean workspace.</p>
+    <div class="hero-stats" style="justify-content:flex-start;margin-top:30px">
+      <div class="stat-chip"><b>&#10003;</b> Inventory</div>
+      <div class="stat-chip"><b>&#10003;</b> Sales</div>
+      <div class="stat-chip"><b>&#10003;</b> Pawns</div>
+    </div>
+  </section>
+
+  <section class="auth-form">
+    <div class="auth-box">
+      <div class="eyebrow" style="margin-bottom:8px">Secure sign in</div>
+      <h2>Staff Login</h2>
+      <p class="hint">Enter your assigned credentials to continue.</p>
+
+      {% if error %}<div class="alert">&#9888; &nbsp; {{ error }}</div>{% endif %}
+
+      <form method="post">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="Owner or staff username" autocomplete="username" required autofocus>
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Your password" autocomplete="current-password" required>
+        <div class="form-actions" style="margin-top:18px">
+          <button type="submit" class="btn-action">Sign in &nbsp; &rarr;</button>
+        </div>
+      </form>
+
+      <p style="font-size:12.5px;color:var(--muted);margin-top:24px;text-align:center">
+        <a href="{{ url_for('home') }}">&larr; Back to website</a>
+      </p>
+    </div>
+  </section>
+</div>
+
+{% endblock %}

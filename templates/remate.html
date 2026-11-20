@@ -1,22 +1,48 @@
 {% extends 'base.html' %}
+{% block title %}Remate &mdash; CVCPawnshop{% endblock %}
 {% block content %}
-<h2>Remate (For Sale)</h2>
+
+<div class="section-head" style="margin-top:6px">
+  <div>
+    <div class="eyebrow">For sale &middot; Remate</div>
+    <h2 class="section-title">All Available Items</h2>
+    <p class="section-sub">Everything on the floor right now. Prices are negotiable for serious buyers.</p>
+  </div>
+  <a href="{{ url_for('home') }}" class="btn-action btn-ghost btn-sm">&larr; Back home</a>
+</div>
+
 {% if items %}
 <div class="grid">
   {% for item in items %}
-  <div class="item">
-    <img src="{{ item['image_url'] }}" alt="{{ item['name'] }}" style="cursor:pointer;" onclick="openModal('{{ item['image_url'] }}','{{ item['name'] }}','{{ '%.2f'|format(item['price']) }}','{{ item['description'] }}')" onerror="this.src='https://via.placeholder.com/300x160?text=No+Image'">
-    <div class="info">
-      <h3>{{ item['name'] }}</h3>
-      <p>{{ item['category'] }} &bull; {{ item['condition'] }}</p>
-      <p class="price">₱{{ '%.2f'|format(item['price']) }}</p>
-      <p>Qty: {{ item['quantity'] }}</p>
-      <p>{{ item['description'] }}</p>
+  <article class="product-card"
+           data-image="{{ item['image_url'] }}"
+           data-name="{{ item['name'] }}"
+           data-price="{{ '%.2f'|format(item['price']) }}"
+           data-desc="{{ item['description'] or '' }}">
+    <div class="product-media">
+      <img src="{{ item['image_url'] }}" alt="{{ item['name'] }}" onclick="openCard(this)"
+           onerror="this.src='https://via.placeholder.com/400x240/1e3a8a/ffffff?text=No+Image'">
+      <span class="product-badge">{{ item['category'] or 'Item' }}</span>
     </div>
-  </div>
+    <div class="product-body">
+      <div class="product-title">{{ item['name'] }}</div>
+      <div class="product-meta">{{ item['condition'] or 'Good condition' }} &middot; {{ item['branch'] or 'CVC Opon' }}</div>
+      <div class="product-desc">{{ item['description'] }}</div>
+      <div class="product-foot">
+        <span class="price">&#8369;{{ '%.2f'|format(item['price']) }}</span>
+        <span class="qty">{{ item['quantity'] }} pcs</span>
+      </div>
+      <button class="btn-action btn-ghost btn-sm" style="width:100%;margin-top:12px;" onclick="openCard(this)">Quick view</button>
+    </div>
+  </article>
   {% endfor %}
 </div>
 {% else %}
-<p>No items available right now.</p>
+<div class="empty">
+  <span class="big">&#128269;</span>
+  <h3>Nothing on the floor yet</h3>
+  <p>Our remate items are moving fast. Check back soon for fresh finds.</p>
+</div>
 {% endif %}
+
 {% endblock %}

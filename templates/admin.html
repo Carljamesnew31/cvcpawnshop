@@ -1,166 +1,216 @@
 {% extends 'base.html' %}
+{% block title %}Admin &mdash; CVCPawnshop{% endblock %}
 {% block content %}
-<h2>Admin Panel ({{ role|capitalize }}: {{ user }})</h2>
+
+<div class="section-head" style="margin-top:6px">
+  <div>
+    <div class="eyebrow">Workspace</div>
+    <h2 class="section-title">Admin Panel</h2>
+    <p class="section-sub">Signed in as <strong>{{ user }}</strong> &middot; {{ role|capitalize }} access</p>
+  </div>
+  <a href="{{ url_for('logout') }}" class="btn-action btn-ghost btn-sm">Logout &nbsp; &rarr;</a>
+</div>
+
+<div class="stat-grid">
+  {% if role == 'owner' %}
+  <div class="stat-card"><span>Total sales</span><strong>&#8369;{{ '%.2f'|format(total_sales) }}</strong><small>All time</small></div>
+  <div class="stat-card alt"><span>Today</span><strong>&#8369;{{ '%.2f'|format(daily_sales) }}</strong><small>{{ now.strftime('%b %d, %Y') }}</small></div>
+  <div class="stat-card"><span>This month</span><strong>&#8369;{{ '%.2f'|format(monthly_sales) }}</strong><small>{{ now.strftime('%B %Y') }}</small></div>
+  <div class="stat-card gold"><span>This year</span><strong>&#8369;{{ '%.2f'|format(yearly_sales) }}</strong><small>{{ now.strftime('%Y') }}</small></div>
+  {% else %}
+  <div class="stat-card"><span>Today's sales</span><strong>&#8369;{{ '%.2f'|format(daily_sales) }}</strong><small>{{ now.strftime('%b %d, %Y') }}</small></div>
+  <div class="stat-card alt"><span>Active pawns</span><strong>{{ pawns|length }}</strong><small>Tickets on file</small></div>
+  <div class="stat-card gold"><span>Items in stock</span><strong>{{ items|length }}</strong><small>Inventory records</small></div>
+  {% endif %}
+</div>
 
 {% if role == 'owner' %}
-<div class="card">
-  <h3>Total Sales: ₱{{ '%.2f'|format(total_sales) }}</h3>
-  <p>Today: ₱{{ '%.2f'|format(daily_sales) }} &nbsp;|&nbsp; This Month: ₱{{ '%.2f'|format(monthly_sales) }} &nbsp;|&nbsp; This Year: ₱{{ '%.2f'|format(yearly_sales) }}</p>
-  <a href="{{ url_for('backup') }}" class="btn-action">Download DB Backup</a>
-</div>
-{% else %}
-<div class="card">
-  <h3>Today's Sales: ₱{{ '%.2f'|format(daily_sales) }}</h3>
+<div class="card" style="padding:14px 20px">
+  <div class="card-head" style="margin-bottom:0">
+    <span class="card-sub">&#128274; Owner tools &middot; keep a copy of your records safe.</span>
+    <a href="{{ url_for('backup') }}" class="btn-action btn-gold btn-sm">&#11015; Download DB Backup</a>
+  </div>
 </div>
 {% endif %}
 
 <div class="card">
-  <h3>Add Item</h3>
+  <div class="card-head">
+    <div><h3>Add New Item</h3><div class="card-sub">Leave the code blank to generate one automatically.</div></div>
+  </div>
   <form method="post" action="{{ url_for('add_item') }}" enctype="multipart/form-data">
-    <input name="code" placeholder="Code (auto if blank)">
-    <input name="name" placeholder="Name" required>
-    <input name="category" placeholder="Category">
-    <textarea name="description" placeholder="Description"></textarea>
-    <input name="condition" placeholder="Condition">
-    <input name="price" type="number" step="0.01" placeholder="Price" required>
-    <input name="quantity" type="number" placeholder="Quantity" required>
-    <input name="image_url" placeholder="Image URL (optional)">
-    <label>Or upload image:</label>
-    <input type="file" name="image_file" accept="image/*">
-    <select name="branch">
-      <option>CVC Opon</option><option>CVC Cordova</option>
-    </select>
-    <button type="submit">Add Item</button>
+    <div class="form-grid">
+      <div><label>Code</label><input name="code" placeholder="Auto-generated"></div>
+      <div><label>Name *</label><input name="name" placeholder="e.g. iPhone 13" required></div>
+      <div><label>Category</label><input name="category" placeholder="Phones, Laptops..."></div>
+      <div><label>Condition</label><input name="condition" placeholder="Good, Fair..."></div>
+      <div><label>Price *</label><input name="price" type="number" step="0.01" placeholder="0.00" required></div>
+      <div><label>Quantity *</label><input name="quantity" type="number" placeholder="1" required></div>
+      <div><label>Branch</label><select name="branch"><option>CVC Opon</option><option>CVC Cordova</option></select></div>
+      <div><label>Image URL (optional)</label><input name="image_url" placeholder="https://..."></div>
+      <div style="grid-column:1/-1"><label>Description</label><textarea name="description" placeholder="Describe the item..."></textarea></div>
+      <div style="grid-column:1/-1"><label>Or upload a photo</label><input type="file" name="image_file" accept="image/*"></div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn-action">&#43; Add Item</button></div>
   </form>
 </div>
 
 <div class="card">
-  <h3>Inventory</h3>
-  <form method="get" action="{{ url_for('admin') }}" style="margin-bottom:10px; display:flex; gap:8px;">
-    <input name="search" placeholder="Search name/code">
-    <button type="submit">Search</button>
+  <div class="card-head">
+    <div><h3>Inventory</h3><div class="card-sub">{{ items|length }} records found</div></div>
+  </div>
+  <form method="get" action="{{ url_for('admin') }}" class="search-row">
+    <input name="search" placeholder="Search by name or code..." value="{{ request.args.get('search','') }}">
+    <button type="submit" class="btn-action btn-sm">Search</button>
+    {% if request.args.get('search') %}<a href="{{ url_for('admin') }}" class="btn-action btn-ghost btn-sm">Clear</a>{% endif %}
   </form>
-  <div style="overflow-x:auto;">
+  <div class="table-wrap">
   <table>
-    <tr><th>ID</th><th>Code</th><th>Name</th><th>Price</th><th>Qty</th><th>Status</th>{% if role=='owner' %}<th>Action</th>{% endif %}</tr>
+    <thead><tr><th>Code</th><th>Item</th><th>Price</th><th>Qty</th><th>Status</th><th>Branch</th>{% if role=='owner' %}<th>Action</th>{% endif %}</tr></thead>
+    <tbody>
     {% for item in items %}
     <tr>
-      <td>{{ item['id'] }}</td>
-      <td>{{ item['code'] }}</td>
-      <td>{{ item['name'] }}</td>
-      <td>₱{{ '%.2f'|format(item['price']) }}</td>
+      <td><strong>{{ item['code'] }}</strong></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <img src="{{ item['image_url'] }}" alt="" style="width:42px;height:42px;object-fit:cover;border-radius:9px;background:#e2e8f0">
+          <div><strong>{{ item['name'] }}</strong><br><small style="color:var(--muted)">{{ item['category'] or '&mdash;' }}</small></div>
+        </div>
+      </td>
+      <td>&#8369;{{ '%.2f'|format(item['price']) }}</td>
       <td>{{ item['quantity'] }}</td>
-      <td>{{ item['status'] }}</td>
+      <td>
+        {% if item['status'] == 'Available' %}
+          {% if item['quantity'] and item['quantity'] <= 2 %}<span class="pill pill-low">Low stock</span>
+          {% else %}<span class="pill pill-ok">Available</span>{% endif %}
+        {% else %}<span class="pill pill-sold">Sold</span>{% endif %}
+      </td>
+      <td>{{ item['branch'] or '&mdash;' }}</td>
       {% if role == 'owner' %}
-      <td><a href="{{ url_for('delete_item', id=item['id']) }}" class="btn-action danger" style="padding:6px 10px;font-size:12px;">Delete</a></td>
+      <td><a href="{{ url_for('delete_item', id=item['id']) }}" class="btn-action danger btn-sm" onclick="return confirm('Delete this item?')">Delete</a></td>
       {% endif %}
     </tr>
+    {% else %}
+    <tr><td colspan="{% if role=='owner' %}7{% else %}6{% endif %}" style="text-align:center;color:var(--muted);padding:26px">No items found.</td></tr>
     {% endfor %}
+    </tbody>
   </table>
   </div>
 </div>
 
-<div class="card">
-  <h3>New Sale</h3>
-  <form method="post" action="{{ url_for('new_sale') }}">
-    <select name="item_id">
-      {% for item in items %}
-      <option value="{{ item['id'] }}">{{ item['name'] }} ({{ item['quantity'] }})</option>
-      {% endfor %}
-    </select>
-    <input name="quantity" type="number" placeholder="Qty" required>
-    <input name="customer_name" placeholder="Customer name">
-    <input name="customer_contact" placeholder="Contact">
-    <select name="branch">
-      <option>CVC Opon</option><option>CVC Cordova</option>
-    </select>
-    <select name="payment_method">
-      <option>Cash</option><option>GCash</option>
-    </select>
-    <button type="submit">Process Sale</button>
-  </form>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(330px,1fr))">
+  <div class="card">
+    <div class="card-head"><div><h3>New Sale</h3><div class="card-sub">Record a sale and print its invoice.</div></div></div>
+    <form method="post" action="{{ url_for('new_sale') }}">
+      <label>Item</label>
+      <select name="item_id">{% for item in items %}<option value="{{ item['id'] }}">{{ item['name'] }} ({{ item['quantity'] }})</option>{% endfor %}</select>
+      <div class="form-grid">
+        <div><label>Quantity *</label><input name="quantity" type="number" placeholder="1" required></div>
+        <div><label>Customer name</label><input name="customer_name" placeholder="Full name"></div>
+        <div><label>Contact</label><input name="customer_contact" placeholder="Phone number"></div>
+        <div><label>Branch</label><select name="branch"><option>CVC Opon</option><option>CVC Cordova</option></select></div>
+        <div><label>Payment method</label><select name="payment_method"><option>Cash</option><option>GCash</option></select></div>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn-action">&#128176; Process Sale</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><div><h3>New Pawn Ticket</h3><div class="card-sub">Due date is set 30 days from today.</div></div></div>
+    <form method="post" action="{{ url_for('new_pawn') }}">
+      <div class="form-grid">
+        <div><label>Item name *</label><input name="item_name" placeholder="e.g. Gold Ring" required></div>
+        <div><label>Customer name *</label><input name="customer_name" placeholder="Full name" required></div>
+        <div><label>Customer phone *</label><input name="customer_contact" placeholder="09..." required></div>
+        <div><label>Pawn amount *</label><input name="pawn_amount" type="number" step="0.01" placeholder="0.00" required></div>
+        <div><label>Branch</label><select name="branch"><option>CVC Opon</option><option>CVC Cordova</option></select></div>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn-action btn-gold">&#128220; Create Pawn</button></div>
+    </form>
+  </div>
 </div>
 
 <div class="card">
-  <h3>Sales History (locked)</h3>
-  <div style="overflow-x:auto;">
+  <div class="card-head"><div><h3>Sales History</h3><div class="card-sub">Locked records &middot; {{ sales|length }} sales</div></div></div>
+  <div class="table-wrap">
   <table>
-    <tr><th>Invoice</th><th>Item</th><th>Customer</th><th>Qty</th><th>Total</th><th>Branch</th><th>Processed By</th><th>Date</th></tr>
+    <thead><tr><th>Invoice</th><th>Item</th><th>Customer</th><th>Qty</th><th>Total</th><th>Branch</th><th>Processed by</th><th>Date</th>{% if role=='owner' %}<th></th>{% endif %}</tr></thead>
+    <tbody>
     {% for s in sales %}
     <tr>
-      <td>{{ s['invoice_no'] }}</td>
+      <td><strong>{{ s['invoice_no'] }}</strong></td>
       <td>{{ s['item_name'] }}</td>
-      <td>{{ s['customer_name'] }}</td>
+      <td>{{ s['customer_name'] or '&mdash;' }}</td>
       <td>{{ s['quantity'] }}</td>
-      <td>₱{{ '%.2f'|format(s['total_amount']) }}</td>
-      <td>{{ s['branch'] }}</td>
+      <td><strong>&#8369;{{ '%.2f'|format(s['total_amount']) }}</strong></td>
+      <td>{{ s['branch'] or '&mdash;' }}</td>
       <td>{{ s['processed_by'] }}</td>
       <td>{{ s['sale_date'] }}</td>
-      {% if role == 'owner' %}<td><a href="{{ url_for('delete_sale', id=s['id']) }}" class="btn-action danger" style="padding:4px 8px;font-size:11px;">Delete</a></td>{% endif %}
+      {% if role == 'owner' %}<td><a href="{{ url_for('delete_sale', id=s['id']) }}" class="btn-action danger btn-sm" onclick="return confirm('Delete this sale?')">Delete</a></td>{% endif %}
     </tr>
+    {% else %}
+    <tr><td colspan="{% if role=='owner' %}9{% else %}8{% endif %}" style="text-align:center;color:var(--muted);padding:26px">No sales recorded yet.</td></tr>
     {% endfor %}
+    </tbody>
   </table>
   </div>
 </div>
 
 <div class="card">
-  <h3>New Pawn</h3>
-  <form method="post" action="{{ url_for('new_pawn') }}">
-    <input name="item_name" placeholder="Item name" required>
-    <input name="customer_name" placeholder="Customer name" required>
-    <input name="customer_contact" placeholder="Customer phone" required>
-    <input name="pawn_amount" type="number" step="0.01" placeholder="Pawn amount" required>
-    <select name="branch">
-      <option>CVC Opon</option><option>CVC Cordova</option>
-    </select>
-    <button type="submit">Create Pawn</button>
-  </form>
-</div>
-
-<div class="card">
-  <h3>Pawn Tickets</h3>
-  <div style="overflow-x:auto;">
+  <div class="card-head"><div><h3>Pawn Tickets</h3><div class="card-sub">{{ pawns|length }} tickets on file</div></div></div>
+  <div class="table-wrap">
   <table>
-    <tr><th>Ticket</th><th>Item</th><th>Customer</th><th>Phone</th><th>Amount</th><th>Due Date</th><th>Total Paid</th><th>Branch</th><th>Action</th></tr>
+    <thead><tr><th>Ticket</th><th>Item</th><th>Customer</th><th>Phone</th><th>Amount</th><th>Due date</th><th>Paid</th><th>Branch</th><th>Renew</th>{% if role=='owner' %}<th></th>{% endif %}</tr></thead>
+    <tbody>
     {% for p in pawns %}
     <tr>
-      <td>{{ p['ticket_no'] }}</td>
+      <td><strong>{{ p['ticket_no'] }}</strong></td>
       <td>{{ p['item_name'] }}</td>
       <td>{{ p['customer_name'] }}</td>
       <td>{{ p['customer_contact'] }}</td>
-      <td>₱{{ '%.2f'|format(p['pawn_amount']) }}</td>
-      <td>{{ p['due_date'] }} {% if p['due_date'] <= (now|string)[:10] %}<span style="color:red;font-weight:bold;">(OVERDUE)</span>{% endif %}</td>
-      <td>₱{{ '%.2f'|format(p['total_paid']) }}</td>
-      <td>{{ p['branch'] }}</td>
-      {% if role == 'owner' %}<td><a href="{{ url_for('delete_pawn', id=p['id']) }}" class="btn-action danger" style="padding:4px 8px;font-size:11px;">Delete</a></td>{% endif %}
+      <td>&#8369;{{ '%.2f'|format(p['pawn_amount']) }}</td>
       <td>
-        <form method="post" action="{{ url_for('renew_pawn', id=p['id']) }}" style="display:flex;gap:4px;">
-          <input name="amount" type="number" step="0.01" placeholder="Renew amt" style="width:90px;">
-          <button type="submit" style="padding:4px 8px;font-size:12px;">Renew +30d</button>
+        {{ p['due_date'] or '&mdash;' }}
+        {% if p['due_date'] and p['due_date'] <= now.strftime('%Y-%m-%d') %}<span class="pill pill-over">Overdue</span>{% endif %}
+      </td>
+      <td>&#8369;{{ '%.2f'|format(p['total_paid']) }}</td>
+      <td>{{ p['branch'] or '&mdash;' }}</td>
+      <td>
+        <form method="post" action="{{ url_for('renew_pawn', id=p['id']) }}" style="display:flex;gap:5px;min-width:180px">
+          <input name="amount" type="number" step="0.01" placeholder="Amount" style="width:90px;margin:0">
+          <button type="submit" class="btn-action btn-sm">Renew</button>
         </form>
       </td>
+      {% if role == 'owner' %}<td><a href="{{ url_for('delete_pawn', id=p['id']) }}" class="btn-action danger btn-sm" onclick="return confirm('Delete this pawn ticket?')">Delete</a></td>{% endif %}
     </tr>
+    {% else %}
+    <tr><td colspan="{% if role=='owner' %}10{% else %}9{% endif %}" style="text-align:center;color:var(--muted);padding:26px">No pawn tickets yet.</td></tr>
     {% endfor %}
+    </tbody>
   </table>
   </div>
 </div>
 
 {% if role == 'owner' %}
 <div class="card">
-  <h3>Audit Log</h3>
-  <div style="overflow-x:auto;">
+  <div class="card-head"><div><h3>Audit Log</h3><div class="card-sub">Every action, recorded.</div></div></div>
+  <div class="table-wrap">
   <table>
-    <tr><th>Who</th><th>Action</th><th>Details</th><th>Timestamp</th></tr>
+    <thead><tr><th>Who</th><th>Action</th><th>Details</th><th>Timestamp</th></tr></thead>
+    <tbody>
     {% for a in audit_logs %}
     <tr>
-      <td>{{ a['username'] }}</td>
-      <td>{{ a['action'] }}</td>
+      <td><strong>{{ a['username'] }}</strong></td>
+      <td><span class="pill pill-ok">{{ a['action'] }}</span></td>
       <td>{{ a['details'] }}</td>
       <td>{{ a['timestamp'] }}</td>
     </tr>
+    {% else %}
+    <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:26px">No activity yet.</td></tr>
     {% endfor %}
+    </tbody>
   </table>
   </div>
 </div>
 {% endif %}
+
 {% endblock %}

@@ -1,11 +1,44 @@
 {% extends 'base.html' %}
+{% block title %}Contact &mdash; CVCPawnshop{% endblock %}
 {% block content %}
-<div class="card">
-  <h2>Contact Us</h2>
-  <p><strong>CVCPawnshop</strong></p>
-  <p>Phone: 0900-000-0000</p>
-  <p>Email: chezlcowell24@gmail.com</p>
-  <p><strong>Opon Branch:</strong> 191 G.Y. Dela Serna St, Gun-ob, Lapu-Lapu, 6015 Cebu (Beside Ching's Cebu Ngohiong - Opon Branch)</p>
-  <p><strong>Cordova Branch:</strong> Poblacion, Cordova, Cordova, Cebu (Beside Lady of All Nations Pharmacy &amp; General Merchandise)</p>
+
+<div class="section-head" style="margin-top:6px">
+  <div>
+    <div class="eyebrow">We'd love to hear from you</div>
+    <h2 class="section-title">Contact Us</h2>
+    <p class="section-sub">Drop by, call, or send a message. Our team is ready to help with valuations, renewals, and great finds.</p>
+  </div>
 </div>
+
+<div class="info-grid">
+  <div class="info-tile">
+    <div class="info-icon">&#9742;</div>
+    <h3>Give us a call</h3>
+    <p>For inquiries, pawn renewals, or to check an item's availability.</p>
+    <a href="tel:09000000000">0900-000-0000 &nbsp; &rarr;</a>
+  </div>
+  <div class="info-tile">
+    <div class="info-icon">&#9993;</div>
+    <h3>Send an email</h3>
+    <p>Questions about an item or your pawn ticket? We'll get back to you.</p>
+    <a href="mailto:chezcowell24@gmail.com">chezcowell24@gmail.com &nbsp; &rarr;</a>
+  </div>
+  <div class="info-tile">
+    <div class="info-icon">&#127968;</div>
+    <h3>Opon Branch</h3>
+    <p>191 G.Y. Dela Serna St, Gun-ob, Lapu-Lapu, 6015 Cebu.<br><small>Beside Ching's Cebu Ngohiong &mdash; Opon Branch</small></p>
+  </div>
+  <div class="info-tile">
+    <div class="info-icon">&#127961;</div>
+    <h3>Cordova Branch</h3>
+    <p>Poblacion, Cordova, Cebu.<br><small>Beside Lady of All Nations Pharmacy &amp; General Merchandise</small></p>
+  </div>
+</div>
+
+<div class="card" style="margin-top:22px;text-align:center">
+  <h3 style="margin-bottom:8px">Looking for something specific?</h3>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:18px;">Tell us what you need and we'll check both branches for you.</p>
+  <a href="mailto:chezcowell24@gmail.com?subject=CVCPawnshop%20Inquiry" class="btn-action">Message us &nbsp; &rarr;</a>
+</div>
+
 {% endblock %}

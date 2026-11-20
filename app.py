@@ -27,6 +27,11 @@ USERS = {
 }
 
 
+@app.context_processor
+def inject_now():
+    return {'now': datetime.now()}
+
+
 def _pg_sql(sql):
     """Translate the app's SQLite-flavoured SQL into PostgreSQL."""
     sql = sql.replace('?', '%s')
@@ -185,19 +190,14 @@ def contact():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
         u = request.form['username']; p = request.form['password']
         if u in USERS and USERS[u][0] == p:
             session['user'] = u; session['role'] = USERS[u][1]
             return redirect(url_for('admin'))
-    return '''
-    <form method="post" style="max-width:300px;margin:100px auto;font-family:sans-serif;">
-      <h2>CVCPawnshop Login</h2>
-      <input type="text" name="username" placeholder="Username (owner/staff)" required style="width:100%;padding:8px;margin:5px 0;"><br>
-      <input type="password" name="password" placeholder="Password" required style="width:100%;padding:8px;margin:5px 0;"><br>
-      <button type="submit" style="width:100%;padding:10px;background:#1e3a8a;color:white;border:none;">Login</button>
-    </form>
-    '''
+        error = 'Invalid username or password. Please try again.'
+    return render_template('login.html', error=error)
 
 
 @app.route('/logout')

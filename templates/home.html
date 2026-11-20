@@ -1,27 +1,63 @@
 {% extends 'base.html' %}
+{% block title %}CVCPawnshop &mdash; Quality pre-loved treasures{% endblock %}
 {% block content %}
-<div class="hero">
-  <h1>CVCPawnshop</h1>
-  <p>Quality items at great prices &mdash; Phones, Laptops, Tablets, Gold &amp; more.</p>
-  <a href="{{ url_for('remate') }}" class="btn-action">Shop Now</a>
+
+<section class="hero">
+  <div class="hero-badge">&#1109; &nbsp; Cebu's trusted pawnshop</div>
+  <h1>Find your next <em>great deal</em></h1>
+  <p>Quality pre-loved phones, laptops, tablets, gold and more &mdash; inspected, priced fairly, and ready for a new home.</p>
+  <div class="hero-cta">
+    <a href="{{ url_for('remate') }}" class="btn-action btn-gold">Browse Remate &nbsp; &rarr;</a>
+    <a href="{{ url_for('contact') }}" class="btn-action btn-ghost">Visit Us</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-chip"><b>{{ items|length }}</b> items live</div>
+    <div class="stat-chip"><b>2</b> branches</div>
+    <div class="stat-chip"><b>&#10003;</b> quality checked</div>
+  </div>
+</section>
+
+<div class="section-head">
+  <div>
+    <div class="eyebrow">Handpicked for you</div>
+    <h2 class="section-title">Featured Items</h2>
+    <p class="section-sub">Fresh finds at prices worth checking out. Tap any item for a closer look.</p>
+  </div>
+  <a href="{{ url_for('remate') }}" class="btn-action btn-ghost btn-sm">View all &nbsp; &rarr;</a>
 </div>
 
-<h2 style="margin:24px 0 12px;">Featured Items</h2>
 {% if items %}
 <div class="grid">
   {% for item in items %}
-  <div class="item">
-    <img src="{{ item['image_url'] }}" alt="{{ item['name'] }}" style="cursor:pointer;" onclick="openModal('{{ item['image_url'] }}','{{ item['name'] }}','{{ '%.2f'|format(item['price']) }}','{{ item['description'] }}')" onerror="this.src='https://via.placeholder.com/300x160/1e3a8a/ffffff?text=No+Image'">
-    <div class="info">
-      <h3>{{ item['name'] }}</h3>
-      <p>{{ item['category'] }} &bull; {{ item['condition'] }}</p>
-      <p class="price">₱{{ '%.2f'|format(item['price']) }}</p>
-      <p>Qty: {{ item['quantity'] }}</p>
+  <article class="product-card"
+           data-image="{{ item['image_url'] }}"
+           data-name="{{ item['name'] }}"
+           data-price="{{ '%.2f'|format(item['price']) }}"
+           data-desc="{{ item['description'] or '' }}">
+    <div class="product-media">
+      <img src="{{ item['image_url'] }}" alt="{{ item['name'] }}" onclick="openCard(this)"
+           onerror="this.src='https://via.placeholder.com/400x240/1e3a8a/ffffff?text=No+Image'">
+      <span class="product-badge">{{ item['category'] or 'Item' }}</span>
     </div>
-  </div>
+    <div class="product-body">
+      <div class="product-title">{{ item['name'] }}</div>
+      <div class="product-meta">{{ item['condition'] or 'Good condition' }} &middot; {{ item['branch'] or 'CVC Opon' }}</div>
+      <div class="product-desc">{{ item['description'] }}</div>
+      <div class="product-foot">
+        <span class="price">&#8369;{{ '%.2f'|format(item['price']) }}</span>
+        <span class="qty">{{ item['quantity'] }} pcs</span>
+      </div>
+      <button class="btn-action btn-ghost btn-sm" style="width:100%;margin-top:12px;" onclick="openCard(this)">Quick view</button>
+    </div>
+  </article>
   {% endfor %}
 </div>
 {% else %}
-<p>No items available right now.</p>
+<div class="empty">
+  <span class="big">&#128230;</span>
+  <h3>No items available right now</h3>
+  <p>New stock arrives often &mdash; check back soon or message us for the latest arrivals.</p>
+</div>
 {% endif %}
+
 {% endblock %}
