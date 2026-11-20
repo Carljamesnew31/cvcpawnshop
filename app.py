@@ -188,6 +188,46 @@ def contact():
     return render_template('contact.html')
 
 
+@app.route('/pawn-check')
+def pawn_check():
+    """Mobile-friendly pawn lookup: due date, days left, and amount to pay."""
+    ticket = request.args.get('ticket', '').strip().upper()
+    today = datetime.now().date()
+    pawn = None
+    days_left = None
+    remaining = 0
+
+    conn = get_db()
+    if ticket:
+        row = conn.execute("SELECT * FROM pawns WHERE UPPER(ticket_no)=?", (ticket,)).fetchone()
+        if row:
+            pawn = dict(row)
+            remaining = max(float(pawn.get('pawn_amount') or 0) - float(pawn.get('total_paid') or 0), 0)
+            if pawn.get('due_date'):
+                try:
+                    days_left = (datetime.strptime(pawn['due_date'], "%Y-%m-%d").date() - today).days
+                except (ValueError, TypeError):
+                    days_left = None
+
+    saved = []
+    if session.get('user'):
+        rows = conn.execute("SELECT * FROM pawns ORDER BY due_date").fetchall()
+        for row in rows:
+            p = dict(row)
+            p['remaining'] = max(float(p.get('pawn_amount') or 0) - float(p.get('total_paid') or 0), 0)
+            p['days_left'] = None
+            if p.get('due_date'):
+                try:
+                    p['days_left'] = (datetime.strptime(p['due_date'], "%Y-%m-%d").date() - today).days
+                except (ValueError, TypeError):
+                    pass
+            saved.append(p)
+    conn.close()
+
+    return render_template('pawn_check.html', ticket=ticket, pawn=pawn, days_left=days_left,
+                           remaining=remaining, today=today, saved=saved)
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None

@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Check Pawn &mdash; CVCPawnshop{% endblock %}
+{% block content %}
+
+<div class="section-head" style="margin-top:6px">
+  <div>
+    <div class="eyebrow">Pawn tracker</div>
+    <h2 class="section-title">Check Your Pawn</h2>
+    <p class="section-sub">Enter your ticket number to see when it's due and how much you still need to pay. Works great on mobile.</p>
+  </div>
+</div>
+
+<div class="card">
+  <form method="get" action="{{ url_for('pawn_check') }}" class="pawn-search">
+    <input name="ticket" value="{{ ticket }}" placeholder="e.g. PAWN-A1B2C3" autocomplete="off" required>
+    <button type="submit" class="btn-action">&#128269; Check Ticket</button>
+    {% if ticket %}<a href="{{ url_for('pawn_check') }}" class="btn-action btn-ghost">Clear</a>{% endif %}
+  </form>
+</div>
+
+{% if ticket and not pawn %}
+<div class="card" style="border-left:4px solid #ef4444">
+  <h3 style="margin-bottom:6px">Ticket not found</h3>
+  <p style="font-size:14px">No pawn matches <strong>{{ ticket }}</strong>. Check the number on your ticket and try again.</p>
+</div>
+{% endif %}
+
+{% if pawn %}
+<div class="pawn-result">
+  <div class="ticket-tag">&#128220; Ticket {{ pawn['ticket_no'] }}</div>
+  <h2>{{ pawn['item_name'] }}</h2>
+  <div>
+    {% if days_left is none %}
+      <span class="pill pill-sold">Due date unavailable</span>
+    {% elif days_left < 0 %}
+      <span class="pill pill-over">&#9888; Overdue by {{ -days_left }} day(s)</span>
+    {% elif days_left <= 7 %}
+      <span class="pill pill-low">&#9203; Due in {{ days_left }} day(s)</span>
+    {% else %}
+      <span class="pill pill-ok">&#10003; Active &middot; {{ days_left }} days left</span>
+    {% endif %}
+  </div>
+
+  <div class="pawn-amount-grid">
+    <div class="pawn-amount-card"><span>Pawn amount</span><strong>&#8369;{{ '%.2f'|format(pawn['pawn_amount'] or 0) }}</strong></div>
+    <div class="pawn-amount-card"><span>Total paid</span><strong>&#8369;{{ '%.2f'|format(pawn['total_paid'] or 0) }}</strong></div>
+    <div class="pawn-amount-card highlight"><span>Amount to pay</span><strong>&#8369;{{ '%.2f'|format(remaining) }}</strong></div>
+    <div class="pawn-amount-card"><span>Due date</span><strong>{{ pawn['due_date'] or '&mdash;' }}</strong></div>
+  </div>
+
+  {% set principal = pawn['pawn_amount'] or 0 %}
+  {% set paid = pawn['total_paid'] or 0 %}
+  {% set pct = (paid / principal * 100) if principal > 0 else 0 %}
+  <div class="progress"><i style="width:{{ [pct, 100]|min }}%"></i></div>
+  <div class="pawn-note">{{ '%.0f'|format(pct) }}% paid &middot; Amount to pay is the principal less payments made. Any renewal fee is set by staff.</div>
+</div>
+{% endif %}
+
+{% if session.get('user') and saved %}
+<div class="section-head">
+  <div>
+    <div class="eyebrow">Staff overview</div>
+    <h2 class="section-title">All Pawn Tickets</h2>
+    <p class="section-sub">Sorted by due date, so the ones expiring soonest are on top.</p>
+  </div>
+  <a href="{{ url_for('admin') }}" class="btn-action btn-ghost btn-sm">Open Admin &nbsp; &rarr;</a>
+</div>
+
+<div class="pawn-mini-grid">
+  {% for p in saved %}
+  <div class="pawn-mini">
+    <div class="top">
+      <div>
+        <strong>{{ p['ticket_no'] }}</strong><br>
+        <small>{{ p['item_name'] }}</small>
+      </div>
+      {% if p['days_left'] is none %}
+        <span class="pill pill-sold">No date</span>
+      {% elif p['days_left'] < 0 %}
+        <span class="pill pill-over">Overdue {{ -p['days_left'] }}d</span>
+      {% elif p['days_left'] <= 7 %}
+        <span class="pill pill-low">Due {{ p['days_left'] }}d</span>
+      {% else %}
+        <span class="pill pill-ok">{{ p['days_left'] }}d left</span>
+      {% endif %}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end">
+      <div>
+        <small>Due</small><br><strong style="font-size:14px">{{ p['due_date'] or '&mdash;' }}</strong>
+      </div>
+      <div style="text-align:right">
+        <small>To pay</small><br><span class="amount">&#8369;{{ '%.2f'|format(p['remaining']) }}</span>
+      </div>
+    </div>
+    <a href="{{ url_for('pawn_check', ticket=p['ticket_no']) }}" class="btn-action btn-ghost btn-sm" style="width:100%;margin-top:12px">View details</a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}
